@@ -29,9 +29,20 @@ public class Main {
                         
                         Digite uma das opcoes: 
                         """);
-        var opcao = leitura.next().toLowerCase();
+        var opcao = leitura.next();
 
-        String json = api.obterDados(BASE_LINK + opcao +"/marcas");
+        String pesquisa;
+
+        if (opcao.toLowerCase().contains("carr")){
+            pesquisa = "carros";
+        } else if (opcao.toLowerCase().contains("mot")) {
+            pesquisa = "motos";
+        } else {
+            pesquisa = "caminhoes";
+        }
+
+        String endereco = BASE_LINK + pesquisa + "/marcas/";
+        String json = api.obterDados(endereco);
         var marcas = conversor.obterLista(json, Dados.class);
 
         marcas.stream()
@@ -41,7 +52,8 @@ public class Main {
         System.out.println("Digite o código da marca: ");
         var codigoMarca = leitura.nextInt();
 
-        json = api.obterDados(BASE_LINK + opcao +"/marcas/" + codigoMarca + "/modelos");
+        endereco +=  codigoMarca + "/modelos/";
+        json = api.obterDados(endereco);
         var Listamodelos = conversor.obterDados(json, Modelos.class);
 
         Listamodelos.modelos().stream()
@@ -60,22 +72,17 @@ public class Main {
         System.out.println("Digite o código do modelo para consultar valores: ");
         var codigoModelo = leitura.nextInt();
 
-        json = api.obterDados(BASE_LINK + opcao +"/marcas/" + codigoMarca + "/modelos/" + codigoModelo + "/anos");
+        endereco = endereco + codigoModelo + "/anos/";
+        json = api.obterDados(endereco);
         var anos = conversor.obterLista(json, Dados.class);
 
-        List<String> ultimos5anos = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            ultimos5anos.add(anos.get(i).codigo());
+        List<Veiculo> veiculos = new ArrayList<>();
+        for (int i = 0; i < anos.size(); i++) {
+            json = api.obterDados(endereco + anos.get(i).codigo());
+            veiculos.add(conversor.obterDados(json, Veiculo.class));
         }
 
         //System.out.println(ultimos5anos);
-
-        List<Veiculo> veiculos = new ArrayList<>();
-
-        for (int i = 0; i < 5; i++) {
-            json = api.obterDados(BASE_LINK + opcao +"/marcas/" + codigoMarca + "/modelos/" + codigoModelo + "/anos/" + ultimos5anos.get(i));
-            veiculos.add(conversor.obterDados(json, Veiculo.class));
-        }
 
         veiculos.forEach(System.out::println);
 
